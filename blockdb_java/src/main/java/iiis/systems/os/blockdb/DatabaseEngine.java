@@ -8,7 +8,7 @@ public class DatabaseEngine {
     private static DatabaseEngine instance = null;
 	static final String logFile="log.txt";
 	static final int blockN = 50; //the blocksize limit
-	private JSONObject transientLog;
+	private JSONObject transLog;
     public static DatabaseEngine getInstance() {
         return instance;
     }
@@ -23,16 +23,16 @@ public class DatabaseEngine {
 
     DatabaseEngine(String dataDir) {
         this.dataDir = dataDir;
-        transientLog=Util.readJsonFile(dataDir+logFile);
-        if (transientLog == null)
+        transLog=Util.readJsonFile(dataDir+logFile);
+        if(transLog==null)
         {
-        	transientLog = new JSONObject();
-        	transientLog.put("numBlocks", 0);
-        	transientLog.put("Transactions", new JSONArray());
-        	Util.writeJsonFile(dataDir+logFile,transientLog);
+        	transLog=new JSONObject();
+        	transLog.put("numBlocks", 0);
+        	transLog.put("Transactions",new JSONArray());
+        	Util.writeJsonFile(dataDir+logFile,transLog);
         }
-        int numBlocks=transientLog.getInt("numBlocks");
-        JSONArray transactions=transientLog.getJSONArray("Transactions");
+        int numBlocks=transLog.getInt("numBlocks");
+        JSONArray transactions=transLog.getJSONArray("Transactions");
         logLength=transactions.length();
         for(int i=1;i<=numBlocks;i++) {
         	JSONObject block=Util.readJsonFile(dataDir+i+".json");
@@ -115,22 +115,22 @@ public class DatabaseEngine {
     		default:
     			System.out.println("ERR: UNKNOWN TRANS TYPE");
     	}
-    	transientLog.getJSONArray("Transactions").put(trans);
+    	transLog.getJSONArray("Transactions").put(trans);
     	logLength++;
     	if(logLength==blockSize)
     	{
-    		int num=transientLog.getInt("numBlocks")+1;
+    		int num=transLog.getInt("numBlocks")+1;
     		JSONObject block=new JSONObject();
     		block.put("BlockID",num);
     		block.put("PrevHash","00000000");
-    		block.put("Transactions",transientLog.getJSONArray("Transactions"));
+    		block.put("Transactions",transLog.getJSONArray("Transactions"));
     		block.put("Nonce","00000000");
     		Util.writeJsonFile(dataDir+num+".json",block);
-    		transientLog.put("numBlocks",num);
-    		transientLog.put("Transactions",new JSONArray());
+    		transLog.put("numBlocks",num);
+    		transLog.put("Transactions",new JSONArray());
             logLength=0;
     	}
-        Util.writeJsonFile(dataDir+logFile,transientLog);
+        Util.writeJsonFile(dataDir+logFile,transLog);
     }
 
     synchronized public int get(String userId) {
