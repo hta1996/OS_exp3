@@ -31,16 +31,18 @@ public class DatabaseEngine {
         	transientLog.put("Transactions", new JSONArray());
         	Util.writeJsonFile(dataDir+logFile,transientLog);
         }
+
         int numBlocks=transientLog.getInt("numBlocks");
         JSONArray transactions=transientLog.getJSONArray("Transactions");
         logLength=transactions.length();
-        for(int i=1;i<=numBlocks;i++) {
-        	JSONObject block=Util.readJsonFile(dataDir+i+".json");
+
+        for (int i=1;i<=numBlocks;i++) {
+        	JSONObject block = Util.readJsonFile(dataDir + i + ".json");
         	JSONArray blockTransactions=block.getJSONArray("Transactions");
-	        for(Object trans:blockTransactions)
+	        for (Object trans: blockTransactions)
 	        	applyTrans((JSONObject) trans);
         }
-        for(Object transaction:transactions)
+        for (Object transaction: transactions)
         	applyTrans((JSONObject) transaction);
     }
 
