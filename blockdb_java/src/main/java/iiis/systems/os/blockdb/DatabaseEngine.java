@@ -13,7 +13,7 @@ public class DatabaseEngine {
         return instance;
     }
 
-    public static void setup(String dataDir) {
+    synchronized public static void setup(String dataDir) {
         instance = new DatabaseEngine(dataDir);
     }
 
@@ -57,15 +57,16 @@ public class DatabaseEngine {
         int value=trans.getInt("Value");
     	String userID;
     	int balance;
-    	switch (type) {
+    	switch (type)
+    	{
     		case "PUT":
                 userID=trans.getString("UserID");
-    			balances.put(userID, value);
+    			balances.put(userID,value);
                 break;
     		case "DEPOSIT":
                 userID=trans.getString("UserID");
 		        balance=getOrZero(userID);
-		        balances.put(userID, balance+value);
+		        balances.put(userID,balance+value);
                 break;
     		case "WITHDRAW":
                 userID=trans.getString("UserID");
@@ -88,27 +89,28 @@ public class DatabaseEngine {
     
     private void addTransaction(int op,String userID,String fromID,String toID,int value) {
     	JSONObject trans=new JSONObject();
-    	switch (op) {
+    	switch (op)
+    	{
     		case putOp:
-    			trans.put("Type", "PUT");
-    			trans.put("UserID", userID);
-    			trans.put("Value", value);
+    			trans.put("Type","PUT");
+    			trans.put("UserID",userID);
+    			trans.put("Value",value);
                 break;
     		case depositOp:
-    			trans.put("Type", "DEPOSIT");
-    			trans.put("UserID", userID);
-    			trans.put("Value", value);
+    			trans.put("Type","DEPOSIT");
+    			trans.put("UserID",userID);
+    			trans.put("Value",value);
                 break;
     		case withdrawOp:
-    			trans.put("Type", "WITHDRAW");
-    			trans.put("UserID", userID);
-    			trans.put("Value", value);
+    			trans.put("Type","WITHDRAW");
+    			trans.put("UserID",userID);
+    			trans.put("Value",value);
                 break;
     		case transferOp:
-    			trans.put("Type", "TRANSFER");
-    			trans.put("FromID", fromID);
-    			trans.put("ToID", toID);
-    			trans.put("Value", value);
+    			trans.put("Type","TRANSFER");
+    			trans.put("FromID",fromID);
+    			trans.put("ToID",toID);
+    			trans.put("Value",value);
                 break;
     		default:
     			System.out.println("ERR: UNKNOWN TRANS TYPE");
@@ -117,25 +119,25 @@ public class DatabaseEngine {
     	logLength++;
     	if(logLength==blockSize)
     	{
-    		int num=transientLog.getInt("numBlocks") + 1;
+    		int num=transientLog.getInt("numBlocks")+1;
     		JSONObject block=new JSONObject();
-    		block.put("BlockID", num);
-    		block.put("PrevHash", "00000000");
-    		block.put("Transactions", transientLog.getJSONArray("Transactions"));
-    		block.put("Nonce", "00000000");
-    		Util.writeJsonFile(dataDir + num + ".json", block);
-    		transientLog.put("numBlocks", num);
-    		transientLog.put("Transactions", new JSONArray());
-            logLength = 0;
+    		block.put("BlockID",num);
+    		block.put("PrevHash","00000000");
+    		block.put("Transactions",transientLog.getJSONArray("Transactions"));
+    		block.put("Nonce","00000000");
+    		Util.writeJsonFile(dataDir+num+".json",block);
+    		transientLog.put("numBlocks",num);
+    		transientLog.put("Transactions",new JSONArray());
+            logLength=0;
     	}
-        Util.writeJsonFile(dataDir + logFile, transientLog);
+        Util.writeJsonFile(dataDir+logFile,transientLog);
     }
 
-    public int get(String userId) {
+    synchronized public int get(String userId) {
         return getOrZero(userId);
     }
 
-    public boolean put(String userId, int value) {
+    synchronized public boolean put(String userId, int value) {
         //logLength++;
         if(value<0)return false;
         addTrans(putOp,userId,null,null,value);
@@ -143,7 +145,7 @@ public class DatabaseEngine {
         return true;
     }
 
-    public boolean deposit(String userId, int value) {
+    synchronized public boolean deposit(String userId, int value) {
         //logLength++;
         if(value<0)return false;
         addTrans(depositOp,userId,null,null,value);
@@ -152,7 +154,7 @@ public class DatabaseEngine {
         return true;
     }
 
-    public boolean withdraw(String userId, int value) {
+    synchronized public boolean withdraw(String userId, int value) {
         //logLength++;
         if(value<0)return false;
         int balance = getOrZero(userId);
@@ -162,7 +164,7 @@ public class DatabaseEngine {
         return true;
     }
 
-    public boolean transfer(String fromId, String toId, int value) {
+    synchronized public boolean transfer(String fromId, String toId, int value) {
         //logLength++;
         if(value<0)return false;
         int fromBalance = getOrZero(fromId);
