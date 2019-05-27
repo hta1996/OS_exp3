@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class DatabaseEngine {
     private static DatabaseEngine instance = null;
 	static final String logFile="log.txt";
-	static final int blockN = 50; //the blocksize limit
+	static final int blockN=50; //the blocksize limit
 	private JSONObject transLog;
     public static DatabaseEngine getInstance() {
         return instance;
@@ -117,7 +117,7 @@ public class DatabaseEngine {
     	}
     	transLog.getJSONArray("Transactions").put(trans);
     	logLength++;
-    	if(logLength==blockSize)
+    	if(logLength==blockN)
     	{
     		int num=transLog.getInt("numBlocks")+1;
     		JSONObject block=new JSONObject();

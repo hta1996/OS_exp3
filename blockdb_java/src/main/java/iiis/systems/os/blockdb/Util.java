@@ -13,7 +13,7 @@ public class Util {
     	{
     		String tmp=new String(Files.readAllBytes(Paths.get(fileP)));
     		return new JSONObject(tmp);	
-    	}catch(IOException _){return null;}
+    	}catch(IOException err){return null;}
     }
     public static boolean writeJsonFile(String fileP, JSONObject obj)
     {
@@ -21,7 +21,7 @@ public class Util {
     	try
     	{
     		Files.write(Paths.get(fileP),obj.toString().getBytes());
-    	}catch(IOException _){flag=false;}
+    	}catch(IOException err){flag=false;}
     	return flag;
     }
 }
