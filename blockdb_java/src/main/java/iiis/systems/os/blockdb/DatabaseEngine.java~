@@ -121,10 +121,10 @@ public class DatabaseEngine {
     	{
     		int num=transLog.getInt("numBlocks")+1;
     		JSONObject block=new JSONObject();
-    		block.put("BlockID",num);
-    		block.put("PrevHash","00000000");
-    		block.put("Transactions",transLog.getJSONArray("Transactions"));
     		block.put("Nonce","00000000");
+    		block.put("Transactions",transLog.getJSONArray("Transactions"));
+    		block.put("PrevHash","00000000");
+    		block.put("BlockID",num);
     		Util.writeJsonFile(dataDir+num+".json",block);
     		transLog.put("numBlocks",num);
     		transLog.put("Transactions",new JSONArray());

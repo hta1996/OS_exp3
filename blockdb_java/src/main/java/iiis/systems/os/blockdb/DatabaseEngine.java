@@ -125,6 +125,10 @@ public class DatabaseEngine {
     		block.put("PrevHash","00000000");
     		block.put("Transactions",transLog.getJSONArray("Transactions"));
     		block.put("Nonce","00000000");
+
+    		//block.put("Transactions",transLog.getJSONArray("Transactions"));
+    		//block.put("PrevHash","00000000");
+    		//block.put("BlockID",num);
     		Util.writeJsonFile(dataDir+num+".json",block);
     		transLog.put("numBlocks",num);
     		transLog.put("Transactions",new JSONArray());
