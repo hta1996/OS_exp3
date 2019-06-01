@@ -40,8 +40,8 @@ public class DatabaseEngine {
 	        for(Object trans:blockTransactions)
 	        	applyTrans((JSONObject) trans);
         }
-        for(Object transaction:transactions)
-        	applyTrans((JSONObject) transaction);
+        for(Object trans:transactions)
+        	applyTrans((JSONObject) trans);
     }
 
     private int getOrZero(String userId) {
@@ -55,36 +55,52 @@ public class DatabaseEngine {
     private void applyTrans(JSONObject trans) {
     	String type=trans.getString("Type");
         int value=trans.getInt("Value");
-    	String userID;
-    	int balance;
+    	String uID;
+    	int b;
     	switch (type)
     	{
     		case "PUT":
-                userID=trans.getString("UserID");
-    			balances.put(userID,value);
+                uID=trans.getString("UserID");
+    			balances.put(uID,value);
                 break;
     		case "DEPOSIT":
-                userID=trans.getString("UserID");
-		        balance=getOrZero(userID);
-		        balances.put(userID,balance+value);
+                uID=trans.getString("UserID");
+		        b=getOrZero(uID);
+		        balances.put(uID,b+value);
                 break;
     		case "WITHDRAW":
-                userID=trans.getString("UserID");
-		        balance=getOrZero(userID);
-		        balances.put(userID,balance-value);
+                uID=trans.getString("UserID");
+		        b=getOrZero(uID);
+		        balances.put(uID,b-value);
                 break;
     		case "TRANSFER":
-    			String fromID=trans.getString("FromID");
-    			String toID=trans.getString("ToID");
-    			int fromBalance=getOrZero(fromID);
-    			int toBalance=getOrZero(toID);
-    			balances.put(fromID,fromBalance-value);
-    			balances.put(toID,toBalance+value);
+    			String fID=trans.getString("FromID");
+    			String tID=trans.getString("ToID");
+    			int fb=getOrZero(fID);
+    			int tb=getOrZero(tID);
+    			balances.put(fID,fb-value);
+    			balances.put(tID,tb+value);
                 break;
-
     		default:
-    			System.out.println("ERR: UNKNOWN TRANS TYPE");
+    			System.out.println("ERR");
     	}
+    }
+    
+    private void flush()
+    {
+    		int num=transLog.getInt("numBlocks")+1;
+    		JSONObject block=new JSONObject();
+    		block.put("BlockID",num);
+    		block.put("PrevHash","00000000");
+    		block.put("Transactions",transLog.getJSONArray("Transactions"));
+    		block.put("Nonce","00000000");
+    		//block.put("Transactions",transLog.getJSONArray("Transactions"));
+    		//block.put("PrevHash","00000000");
+    		//block.put("BlockID",num);
+    		Util.writeJsonFile(dataDir+num+".json",block);
+    		transLog.put("numBlocks",num);
+    		transLog.put("Transactions",new JSONArray());
+            logLength=0;
     }
     
     private void addTrans(int op,String userID,String fromID,String toID,int value) {
@@ -113,26 +129,13 @@ public class DatabaseEngine {
     			trans.put("Value",value);
                 break;
     		default:
-    			System.out.println("ERR: UNKNOWN TRANS TYPE");
+    			System.out.println("ERR");
     	}
     	transLog.getJSONArray("Transactions").put(trans);
     	logLength++;
     	if(logLength==blockN)
     	{
-    		int num=transLog.getInt("numBlocks")+1;
-    		JSONObject block=new JSONObject();
-    		block.put("BlockID",num);
-    		block.put("PrevHash","00000000");
-    		block.put("Transactions",transLog.getJSONArray("Transactions"));
-    		block.put("Nonce","00000000");
-
-    		//block.put("Transactions",transLog.getJSONArray("Transactions"));
-    		//block.put("PrevHash","00000000");
-    		//block.put("BlockID",num);
-    		Util.writeJsonFile(dataDir+num+".json",block);
-    		transLog.put("numBlocks",num);
-    		transLog.put("Transactions",new JSONArray());
-            logLength=0;
+    		flush();
     	}
         Util.writeJsonFile(dataDir+logFile,transLog);
     }
@@ -153,30 +156,30 @@ public class DatabaseEngine {
         //logLength++;
         if(value<0)return false;
         addTrans(depositOp,userId,null,null,value);
-        int balance = getOrZero(userId);
-        balances.put(userId, balance + value);
+        int b=getOrZero(userId);
+        balances.put(userId,b+value);
         return true;
     }
 
     synchronized public boolean withdraw(String userId, int value) {
         //logLength++;
         if(value<0)return false;
-        int balance = getOrZero(userId);
-        if(balance<value)return false;
+        int b=getOrZero(userId);
+        if(b<value)return false;
         addTrans(withdrawOp,userId,null,null,value);
-        balances.put(userId, balance - value);
+        balances.put(userId,b-value);
         return true;
     }
 
     synchronized public boolean transfer(String fromId, String toId, int value) {
         //logLength++;
         if(value<0)return false;
-        int fromBalance = getOrZero(fromId);
-        int toBalance = getOrZero(toId);
-        if(fromBalance<value)return false;
+        int fb=getOrZero(fromId);
+        int tb=getOrZero(toId);
+        if(fb<value)return false;
         addTrans(transferOp,null,fromId,toId,value);
-        balances.put(fromId, fromBalance - value);
-        balances.put(toId, toBalance + value);
+        balances.put(fromId,fb-value);
+        balances.put(toId,tb+value);
         return true;
     }
 
