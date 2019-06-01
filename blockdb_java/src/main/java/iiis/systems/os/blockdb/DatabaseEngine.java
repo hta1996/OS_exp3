@@ -87,7 +87,7 @@ public class DatabaseEngine {
     	}
     }
     
-    private void addTransaction(int op,String userID,String fromID,String toID,int value) {
+    private void addTrans(int op,String userID,String fromID,String toID,int value) {
     	JSONObject trans=new JSONObject();
     	switch (op)
     	{
